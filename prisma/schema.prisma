@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  role      Role      @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  ticket    Ticket[]
+  profile   Profile?
+  booking   Booking[]
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  firstname String?
+  lastname  String?
+  email     String   @unique
+  phone     String?
+  image     String?
+  address   String?
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?     @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id            Int      @id @default(autoincrement())
+  user          User?    @relation(fields: [userId], references: [id])
+  userId        Int?     @unique
+  event         Event    @relation(fields: [eventId], references: [id])
+  eventId       Int      @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+  bookingId     Int      @unique
+  eventDate     String
+  eventLocation String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?     @unique
+  ticket    Ticket[]
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model Tent {
+//   id        Int      @id @default(autoincrement())
+//   image     String
+//   url       String
+//   brand     String
+//   title     String
+//   oldPrice  Int
+//   newPrice  Int
+//   offer     String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+//npx prisma generate , npx prisma migrate dev --create-only --skip-seed --name reviews , npx prisma migrate reset , npx prisma db seed
+model Event {
+  id           Int      @id @default(autoincrement())
+  url          String?
+  image        String?
+  title        String?
+  dateLocation String?
+  location     String?
+  genre        String?
+  ticket       Ticket[]
+  description  String?
+  fullAddress  String?
+  bgImage      String?
+  summary      String?
+  bigTitle     String?
+  date         String?
+  time         String?
+  age          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
