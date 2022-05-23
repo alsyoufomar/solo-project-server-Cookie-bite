@@ -1,110 +1,99 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const data = require('../../../test.json')
+const data = require('../../../test.json');
 
-
-async function main () {
-  // const user = await createUser();
-  // const profile = await createProfile(user)
-  const event = await createEvent()
-  // const booking = await createBooking(user)
-  // const ticket = await createTicket(user, booking)
+async function main() {
+  const user = await createUser();
+  const profile = await createProfile(user);
+  const event = await createEvent();
+  const thread = await createThread(user);
+  const reply = await createReply(user, thread);
   process.exit(0);
 }
 
-
-async function createUser () {
+async function createUser() {
   const createdUser = await prisma.user.create({
     data: {
       username: 'omar2',
-      password: '12345'
-    }
-  })
-  console.log('created user', createdUser)
-  return createdUser
+      password: '12345',
+      email: 'ooo@ooo.com',
+    },
+  });
+  console.log('created user', createdUser);
+  return createdUser;
 }
 
-async function createProfile (user) {
+async function createProfile(user) {
   const createdProfile = await prisma.profile.create({
     data: {
       firstname: 'omar',
       lastname: 'alsyouf',
-      email: '123@12345.com',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/59410037?v=4',
+      bio: 'something cool',
       phone: '123',
-      image: 'https://avatars.githubusercontent.com/u/59410037?v=4',
-      address: 'se23jw',
       user: {
         connect: {
-          id: user.id
-        }
-      }
-    },
-    include: {
-      user: true
-
-    }
-  })
-  console.log('profile', createdProfile)
-  return createdProfile
-}
-
-async function createEvent () {
-  const createdEvent = await prisma.event.createMany({
-    data
-  })
-  console.log('created event', createdEvent)
-  return createdEvent
-}
-
-async function createBooking (user) {
-  const createdBooking = await prisma.booking.create({
-    data: {
-      price: 30.5,
-      user: {
-        connect: {
-          id: user.id
-        }
-      }
-    },
-    include: {
-      user: true
-    }
-  })
-  console.log('booking created', createdBooking)
-  return createdBooking
-}
-
-async function createTicket (user, booking) {
-  const createdTicket = await prisma.ticket.create({
-    data: {
-      eventDate: 'tomorrow',
-      eventLocation: 'London, England',
-      user: {
-        connect: { id: user.id }
+          id: user.id,
+        },
       },
-      event: {
-        connect: { id: 3 }
-      },
-      booking: {
-        connect: { id: booking.id }
-      }
     },
     include: {
       user: true,
-      event: true,
-      booking: true
-    }
-  })
-  console.log('created ticket', createdTicket)
-  return createdTicket
+    },
+  });
+  console.log('profile', createdProfile);
+  return createdProfile;
 }
 
-main()
-  .catch(async err => {
-    console.log(err)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+async function createEvent() {
+  const createdEvent = await prisma.event.createMany({
+    data,
+  });
+  console.log('created event', createdEvent);
+  return createdEvent;
+}
 
+async function createThread(user) {
+  const createdThread = await prisma.thread.create({
+    data: {
+      title: 'not a thread',
+      content: 'this thread is fake',
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+  console.log('thread created', createdThread);
+  return createdThread;
+}
 
+async function createReply(user, thread) {
+  const createdReply = await prisma.reply.create({
+    data: {
+      content: 'no solution for this mate',
+      user: {
+        connect: { id: user.id },
+      },
+      thread: {
+        connect: { id: thread.id },
+      },
+    },
+    include: {
+      user: true,
+      thread: true,
+    },
+  });
+  console.log('created reply', createdReply);
+  return createdReply;
+}
 
+main().catch(async (err) => {
+  console.log(err);
+  await prisma.$disconnect();
+  process.exit(1);
+});
