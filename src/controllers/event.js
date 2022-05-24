@@ -30,7 +30,7 @@ const getEvent = async (req, res) => {
 const getFeatured = async (req, res) => {
   const featured = await prisma.event.findMany({
     where: {
-      location: 'London',
+      location: 'Cardiff',
       genre: 'gigs',
     },
     skip: 13,
@@ -43,7 +43,7 @@ const getFeatured = async (req, res) => {
 const getThisWeek = async (req, res) => {
   const thisWeek = await prisma.event.findMany({
     where: {
-      location: 'Liverpool',
+      location: 'Cardiff',
       genre: 'club',
     },
     skip: 13,
@@ -53,4 +53,41 @@ const getThisWeek = async (req, res) => {
   res.json({ events: thisWeek });
 };
 
-module.exports = { getEvent, getFeatured, getThisWeek };
+const addToList = async (req, res) => {
+  const bookmark = await prisma.favourites.create({
+    data: {
+      event: {
+        connect: {
+          id: 888,
+        },
+      },
+      user: {
+        connect: {
+          id: 1,
+        },
+      },
+    },
+  });
+  res.json({ bookmark });
+};
+
+const removeFromList = async (req, res) => {
+  const { bookmarkId } = req.params;
+
+  try {
+    const removedFromList = await prisma.favourites.delete({
+      where: { id: parseInt(bookmarkId) },
+    });
+    return res.json({ removedFromList });
+  } catch (e) {
+    return res.json({ err: e.message });
+  }
+};
+
+module.exports = {
+  getEvent,
+  getFeatured,
+  getThisWeek,
+  addToList,
+  removeFromList,
+};

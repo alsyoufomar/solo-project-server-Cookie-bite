@@ -14,14 +14,20 @@ app.use(express.json());
 // Tell express to use a URL Encoding middleware
 app.use(express.urlencoded({ extended: true }));
 
-
-
 // Tell express to use your routers here
-const shopRouter = require('./routers/shop');
-app.use('/shop', shopRouter);
-
 const eventRouter = require('./routers/event');
 app.use('/event', eventRouter);
+
+const userRouter = require('./routers/user.js');
+app.use('/user', userRouter);
+
+const threadRouter = require('./routers/thread.js');
+app.use('/thread', threadRouter);
+app.use('/threads', threadRouter);
+
+const replyRouter = require('./routers/reply.js');
+app.use('/reply', replyRouter);
+app.use('/replies', replyRouter);
 
 // Set up a default "catch all" route to use when someone visits a route
 // that we haven't built
