@@ -81,6 +81,8 @@ model Favourites {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, eventId])
 }
 
 //npx prisma generate , npx prisma migrate dev --create-only --skip-seed --name reviews , npx prisma migrate reset , npx prisma db seed
