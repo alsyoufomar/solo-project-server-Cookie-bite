@@ -1,41 +1,17 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const cheerio = require('cheerio');
-const axios = require('axios');
-const fs = require('fs');
+const data = require('../../../newDataScrapped.json');
 
 async function main() {
-  await caller(londonEvents.club, 'club');
-  await caller(londonEvents.gigs, 'gigs');
-  await caller(londonEvents.festivals, 'festivals');
-  await caller(londonEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
-  await caller(
-    londonEvents['Experiences & Attractions'],
-    'Experiences & Attractions'
-  );
-  await caller(londonEvents['Food & Drink'], 'Food & Drink');
+  const user = await createUser();
+  await createProfile(user);
+  await createEvent();
+  const thread = await createThread(user);
+  await createReply(user, thread);
   process.exit(0);
 }
 
-const londonEvents = {
-  club: 'https://www.skiddle.com/clubs/London/',
-  gigs: 'https://www.skiddle.com/gigs/London/',
-  festivals:
-    'https://www.skiddle.com/festivals/cities/London/?from_date=25%20May%202022',
-  'Comedy Theatre Arts':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=12&eventcodes%5B%5D=10&eventcodes%5B%5D=24&eventcodes%5B%5D=42&eventcodes%5B%5D=44',
-  'Experiences & Attractions':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=49&eventcodes%5B%5D=50&eventcodes%5B%5D=16&eventcodes%5B%5D=14',
-  'Food & Drink':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=34&eventcodes%5B%5D=18',
-};
-
-async function caller(url, genre) {
-  const data = await mainScraper(url, genre);
-  await createEvent(data);
-}
-
-async function createEvent(data) {
+async function createEvent() {
   const createdEvent = await prisma.event.createMany({
     data,
   });
@@ -43,54 +19,77 @@ async function createEvent(data) {
   return createdEvent;
 }
 
-const url =
-  'https://www.skiddle.com/festivals/cities/London/?from_date=25%20May%202022';
-const articles = [];
-async function mainScraper(url, myGenre) {
-  try {
-    const res = await axios(url);
-    const html = res.data;
-    const $ = cheerio.load(html);
-
-    $('.MuiCardContent-root', html).each(async function (i, el) {
-      const image = $(el).find('.parallax-images').attr('src');
-      const title = $(el)
-        .find('.MuiTypography-root')
-        .children('a')
-        .children('span')
-        .text();
-      let url = $(el).children('a:first').attr('href');
-      const date = new Date(
-        $(el)
-          .find('.MuiBox-root')
-          .children('p:first')
-          .text()
-          .replace(/th|rd|nd|st/gm, '') + '22'
-      );
-      const location = $(el).find('.MuiBox-root').children('p:last').text();
-      const featured = featuredGenerate();
-
-      const myObj = {
-        title,
-        image,
-        url,
-        location,
-        date,
-        genre: myGenre,
-        featured,
-      };
-      articles.push(myObj);
-    });
-    return articles;
-  } catch (err) {
-    console.log(err);
-  }
+async function createUser() {
+  const createdUser = await prisma.user.create({
+    data: {
+      username: 'omar2',
+      password: '12345',
+      email: 'ooo@ooo.com',
+    },
+  });
+  console.log('created user', createdUser);
+  return createdUser;
 }
 
-function featuredGenerate() {
-  let test = Math.floor(Math.random() * 10 + 1);
-  if (test > 0 && test < 4) return true;
-  else return false;
+async function createProfile(user) {
+  const createdProfile = await prisma.profile.create({
+    data: {
+      firstname: 'omar',
+      lastname: 'alsyouf',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/59410037?v=4',
+      bio: 'something cool',
+      phone: '123',
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+  console.log('profile', createdProfile);
+  return createdProfile;
+}
+
+async function createThread(user) {
+  const createdThread = await prisma.thread.create({
+    data: {
+      title: 'not a thread',
+      content: 'this thread is fake',
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+  console.log('thread created', createdThread);
+  return createdThread;
+}
+
+async function createReply(user, thread) {
+  const createdReply = await prisma.reply.create({
+    data: {
+      content: 'no solution for this mate',
+      user: {
+        connect: { id: user.id },
+      },
+      thread: {
+        connect: { id: thread.id },
+      },
+    },
+    include: {
+      user: true,
+      thread: true,
+    },
+  });
+  console.log('created reply', createdReply);
+  return createdReply;
 }
 
 main().catch(async (err) => {
@@ -98,5 +97,3 @@ main().catch(async (err) => {
   await prisma.$disconnect();
   process.exit(1);
 });
-
-//club , gigs , festivals, ComedyTheatreArts , ExperiencesAttractions , FoodDrink

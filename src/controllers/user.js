@@ -6,67 +6,79 @@ const key = process.env.KEY;
 const saltRounds = 10;
 
 const createUser = async (req, res) => {
-  const {
-    username,
-    password,
-    email,
-    firstname,
-    lastname,
-    avatarUrl,
-    bio,
-    phone,
-  } = req.body;
-
-  const hash = await bcrypt.hash(password, saltRounds);
-
-  const createdUser = await prisma.user.create({
-    data: {
+  try {
+    const {
+      username,
+      password,
       email,
-      username: firstname,
-      password: hash,
-      profile: {
-        create: {
-          firstname,
-          lastname,
-          avatarUrl,
-          bio,
-          phone,
+      firstname,
+      lastname,
+      avatarUrl,
+      bio,
+      phone,
+    } = req.body;
+
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    const createdUser = await prisma.user.create({
+      data: {
+        email,
+        username: firstname,
+        password: hash,
+        profile: {
+          create: {
+            firstname,
+            lastname,
+            avatarUrl,
+            bio,
+            phone,
+          },
         },
       },
-    },
-    include: {
-      profile: true,
-    },
-  });
-  res.json({ data: createdUser });
+      include: {
+        profile: true,
+      },
+    });
+    res.json({ data: createdUser });
+  } catch (e) {
+    return res.json({ err: e.message });
+  }
 };
 
 async function loginUser(req, res) {
-  const { username, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { username } });
-  if (user) {
-    const match = await bcrypt.compare(password, user.password);
-    if (match) {
-      const token = jwt.sign({ id: user.id }, key);
-      res.json({ token });
+  try {
+    const { username, password } = req.body;
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (user) {
+      const match = await bcrypt.compare(password, user.password);
+      if (match) {
+        const token = jwt.sign({ id: user.id }, key);
+        res.json({ token });
+      } else {
+        res.status(404);
+        res.json({ error: 'Wrong Password!!' });
+      }
     } else {
       res.status(404);
-      res.json({ error: 'Wrong Password!!' });
+      res.json({ error: 'User Not Found' });
     }
-  } else {
-    res.status(404);
-    res.json({ error: 'User Not Found' });
+  } catch (e) {
+    return res.json({ err: e.message });
   }
 }
 
 async function getUser(req, res) {
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(req.userId) },
-    include: {
-      profile: true,
-    },
-  });
-  res.json({ user });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(req.userId) },
+      include: {
+        profile: true,
+      },
+    });
+    res.json({ user });
+  } catch (e) {
+    return res.json({ err: e.message });
+  }
 }
 
 module.exports = { createUser, loginUser, getUser };
