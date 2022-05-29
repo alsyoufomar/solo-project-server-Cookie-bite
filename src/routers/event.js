@@ -11,9 +11,9 @@ const { checkToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', getEvent);
-router.get('/featured', getFeatured);
-router.get('/thisWeek', getThisWeek);
+router.get('/', checkToken, getEvent);
+router.get('/featured', checkToken, getFeatured);
+router.get('/thisWeek', checkToken, getThisWeek);
 router.get('/bookmark', checkToken, getBookmark);
 
 router.post('/:eventId/save', checkToken, addToList);

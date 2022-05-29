@@ -7,9 +7,6 @@ const getEvent = async (req, res) => {
     const skip = parseInt(page);
     const take = parseInt(perPage);
     const where = {};
-    // if (location) where.location.contains = location;
-    // if (genre) where.genre = genre;
-    // console.log(new Date(endDate.substring(4, 15)));
     where.date = {};
 
     let foundEvent = await prisma.$transaction([
@@ -38,10 +35,10 @@ const getEvent = async (req, res) => {
         },
       });
       const finalBookmark = bookmarkFlag(foundEvent[1], foundBookmarks);
-      foundEvent = finalBookmark;
+      foundEvent[1] = finalBookmark;
     }
 
-    res.json({ events: foundEvent });
+    res.json({ eventsData: foundEvent[1], eventsCount: foundEvent[0] });
   } catch (e) {
     return res.json({ err: e.message });
   }
@@ -95,27 +92,39 @@ const getThisWeek = async (req, res) => {
     const result = today.setDate(today.getDate() + week);
     const nextWeek = new Date(result);
     where.date = {};
-    let thisWeek = await prisma.event.findMany({
-      where: {
-        date: {
-          gte: new Date(),
-          lt: nextWeek,
+
+    let thisWeek = await prisma.$transaction([
+      prisma.event.count({
+        where: {
+          date: {
+            gte: new Date(),
+            lt: nextWeek,
+          },
         },
-      },
-      take,
-      skip: skip * take,
-    });
+      }),
+      prisma.event.findMany({
+        where: {
+          date: {
+            gte: new Date(),
+            lt: nextWeek,
+          },
+        },
+        take,
+        skip: skip * take,
+      }),
+    ]);
+
     if (req.userId) {
       const foundBookmarks = await prisma.favourites.findMany({
         where: {
           userId: parseInt(req.userId),
         },
       });
-      const finalThisWeek = bookmarkFlag(thisWeek, foundBookmarks);
-      thisWeek = finalThisWeek;
+      const finalThisWeek = bookmarkFlag(thisWeek[1], foundBookmarks);
+      thisWeek[1] = finalThisWeek;
     }
 
-    res.json({ events: thisWeek });
+    res.json({ thisWeekData: thisWeek[1], thisWeekCount: thisWeek[0] });
   } catch (e) {
     return res.json({ err: e.message });
   }
@@ -146,7 +155,6 @@ const addToList = async (req, res) => {
 
 const removeFromList = async (req, res) => {
   const { bookmarkId } = req.params;
-
   try {
     const removedFromList = await prisma.favourites.delete({
       where: { id: parseInt(bookmarkId) },
