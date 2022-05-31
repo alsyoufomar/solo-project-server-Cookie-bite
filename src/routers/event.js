@@ -8,12 +8,13 @@ const {
   getBookmark,
 } = require('../controllers/event');
 const { checkToken } = require('../middleware/auth');
+const { getUserId } = require('../middleware/userIdProvider');
 
 const router = express.Router();
 
-router.get('/', checkToken, getEvent);
-router.get('/featured', checkToken, getFeatured);
-router.get('/thisWeek', checkToken, getThisWeek);
+router.get('/', getUserId, getEvent);
+router.get('/featured', getUserId, getFeatured);
+router.get('/thisWeek', getUserId, getThisWeek);
 router.get('/bookmark', checkToken, getBookmark);
 
 router.post('/:eventId/save', checkToken, addToList);

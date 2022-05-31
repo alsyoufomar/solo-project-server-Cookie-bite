@@ -1,8 +1,21 @@
 const prisma = require('../utils/prisma');
+const Joi = require('joi');
 
 const createThread = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const schema = Joi.object({
+      title: Joi.string().min(3).max(30),
+      content: Joi.string().min(1).max(300),
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      res.status(400);
+      res.json({ error: error.details[0].message });
+      return;
+    }
+
+    const { title, content } = value;
     const createdThread = await prisma.thread.create({
       data: {
         title,
