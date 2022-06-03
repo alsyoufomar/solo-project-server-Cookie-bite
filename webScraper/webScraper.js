@@ -4,8 +4,30 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const fs = require('fs');
 const schedule = require('node-schedule');
+const {
+  londonEvents,
+  manchesterEvents,
+  liverpoolEvents,
+  edinburghEvents,
+  birminghamEvents,
+  cardiffEvents,
+} = require('./eventInCity');
 
 async function scrapper() {
+  const foundBookmarks = await prisma.favourites.findMany({
+    select: { eventId: true },
+  });
+  const bookmarkEvents = objToArr(foundBookmarks);
+  await prisma.event.deleteMany({
+    where: {
+      NOT: {
+        id: {
+          in: bookmarkEvents,
+        },
+      },
+    },
+  });
+
   await caller(londonEvents.club, 'club');
   await caller(londonEvents.gigs, 'gigs');
   await caller(londonEvents.festivals, 'festivals');
@@ -15,20 +37,57 @@ async function scrapper() {
     'Experiences & Attractions'
   );
   await caller(londonEvents['Food & Drink'], 'Food & Drink');
-}
 
-const londonEvents = {
-  club: 'https://www.skiddle.com/clubs/London/',
-  gigs: 'https://www.skiddle.com/gigs/London/',
-  festivals:
-    'https://www.skiddle.com/festivals/cities/London/?from_date=25%20May%202022',
-  'Comedy Theatre Arts':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=12&eventcodes%5B%5D=10&eventcodes%5B%5D=24&eventcodes%5B%5D=42&eventcodes%5B%5D=44',
-  'Experiences & Attractions':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=49&eventcodes%5B%5D=50&eventcodes%5B%5D=16&eventcodes%5B%5D=14',
-  'Food & Drink':
-    'https://www.skiddle.com/whats-on/events/London/?eventcodes%5B%5D=34&eventcodes%5B%5D=18',
-};
+  await caller(manchesterEvents.club, 'club');
+  await caller(manchesterEvents.gigs, 'gigs');
+  await caller(manchesterEvents.festivals, 'festivals');
+  await caller(manchesterEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
+  await caller(
+    manchesterEvents['Experiences & Attractions'],
+    'Experiences & Attractions'
+  );
+  await caller(manchesterEvents['Food & Drink'], 'Food & Drink');
+
+  await caller(liverpoolEvents.club, 'club');
+  await caller(liverpoolEvents.gigs, 'gigs');
+  await caller(liverpoolEvents.festivals, 'festivals');
+  await caller(liverpoolEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
+  await caller(
+    liverpoolEvents['Experiences & Attractions'],
+    'Experiences & Attractions'
+  );
+  await caller(liverpoolEvents['Food & Drink'], 'Food & Drink');
+
+  await caller(edinburghEvents.club, 'club');
+  await caller(edinburghEvents.gigs, 'gigs');
+  await caller(edinburghEvents.festivals, 'festivals');
+  await caller(edinburghEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
+  await caller(
+    edinburghEvents['Experiences & Attractions'],
+    'Experiences & Attractions'
+  );
+  await caller(edinburghEvents['Food & Drink'], 'Food & Drink');
+
+  await caller(birminghamEvents.club, 'club');
+  await caller(birminghamEvents.gigs, 'gigs');
+  await caller(birminghamEvents.festivals, 'festivals');
+  await caller(birminghamEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
+  await caller(
+    birminghamEvents['Experiences & Attractions'],
+    'Experiences & Attractions'
+  );
+  await caller(birminghamEvents['Food & Drink'], 'Food & Drink');
+
+  await caller(cardiffEvents.club, 'club');
+  await caller(cardiffEvents.gigs, 'gigs');
+  await caller(cardiffEvents.festivals, 'festivals');
+  await caller(cardiffEvents['Comedy Theatre Arts'], 'Comedy Theatre Arts');
+  await caller(
+    cardiffEvents['Experiences & Attractions'],
+    'Experiences & Attractions'
+  );
+  await caller(cardiffEvents['Food & Drink'], 'Food & Drink');
+}
 
 async function caller(url, genre) {
   const data = await mainScraper(url, genre);
@@ -41,6 +100,26 @@ async function addEvents(data) {
   });
   console.log('created event', createdEvent);
   return createdEvent;
+}
+
+async function deleter(arr) {
+  await prisma.event.deleteMany({
+    where: {
+      NOT: {
+        id: {
+          in: arr,
+        },
+      },
+    },
+  });
+}
+
+function objToArr(arr) {
+  const arrOfEventIds = [];
+  for (let n of arr) {
+    arrOfEventIds.push(...Object.values(n));
+  }
+  return arrOfEventIds;
 }
 
 const url =
@@ -93,14 +172,16 @@ function featuredGenerate() {
   else return false;
 }
 
-// const date = new Date(
+// schedule.scheduleJob('15 * * * *', function () {
+//   scrapper().catch(async (err) => {
+//     console.log(err);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });
+// });
 
-schedule.scheduleJob('15 * * * *', function () {
-  scrapper().catch(async (err) => {
-    console.log(err);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+scrapper().catch(async (err) => {
+  console.log(err);
+  await prisma.$disconnect();
+  process.exit(1);
 });
-
-//club , gigs , festivals, ComedyTheatreArts , ExperiencesAttractions , FoodDrink
