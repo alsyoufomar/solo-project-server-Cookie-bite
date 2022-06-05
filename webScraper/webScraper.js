@@ -106,16 +106,16 @@ function featuredGenerate() {
   else return false;
 }
 
-schedule.scheduleJob('28 * * * *', function () {
-  scrapper().catch(async (err) => {
-    console.log(err);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
-});
-
-// scrapper().catch(async (err) => {
-//   console.log(err);
-//   await prisma.$disconnect();
-//   process.exit(1);
+// schedule.scheduleJob('28 * * * *', function () {
+//   scrapper().catch(async (err) => {
+//     console.log(err);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });
 // });
+
+scrapper().catch(async (err) => {
+  console.log(err);
+  await prisma.$disconnect();
+  process.exit(1);
+});
