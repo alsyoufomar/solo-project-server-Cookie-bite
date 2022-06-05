@@ -71,6 +71,15 @@ const cardiffEvents = {
     'https://www.skiddle.com/whats-on/events/Cardiff/?eventcodes%5B%5D=34&eventcodes%5B%5D=18',
 };
 
+const cities = [
+  londonEvents,
+  manchesterEvents,
+  liverpoolEvents,
+  edinburghEvents,
+  birminghamEvents,
+  cardiffEvents,
+];
+
 module.exports = {
   londonEvents,
   manchesterEvents,
@@ -78,4 +87,5 @@ module.exports = {
   edinburghEvents,
   birminghamEvents,
   cardiffEvents,
+  cities,
 };
