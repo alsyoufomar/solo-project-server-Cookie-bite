@@ -18,9 +18,9 @@ async function scrapper() {
       caller(city.club, 'club'),
       caller(city.gigs, 'gigs'),
       caller(city.festivals, 'festivals'),
-      caller(city['Comedy Theatre Arts'], 'Comedy Theatre Arts'),
-      caller(city['Experiences & Attractions'], 'Experiences & Attractions'),
-      caller(city['Food & Drink'], 'Food & Drink'),
+      caller(city['comedy theatre arts'], 'comedy theatre arts'),
+      caller(city['experiences & attractions'], 'experiences & attractions'),
+      caller(city['food & drink'], 'food & drink'),
     ]);
   }
 }
@@ -87,9 +87,9 @@ async function mainScraper(url, myGenre) {
         title,
         image,
         url,
-        location,
+        location: location + ' Location',
         date,
-        genre: myGenre + ' ' + title.toLowerCase(),
+        genre: myGenre + ' event ' + title.toLowerCase(),
         featured,
       };
       articles.push(myObj);
