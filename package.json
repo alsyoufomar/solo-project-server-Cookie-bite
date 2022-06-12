@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
+    "dev": "concurrently --kill-others \"nodemon src/index.js\" \"node webScraper/webScraper.js\"",
+    "start": "concurrently --kill-others \"node src/index.js\" \"node webScraper/webScraper.js\"",
     "build": "npx prisma migrate deploy"
   },
   "prisma": {
@@ -24,7 +24,8 @@
     "express": "^4.17.3",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
-    "node-schedule": "^2.1.0"
+    "node-schedule": "^2.1.0",
+    "concurrently": "^7.2.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.15",
