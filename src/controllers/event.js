@@ -2,15 +2,34 @@ const prisma = require('../utils/prisma');
 
 const getEvent = async (req, res) => {
   try {
-    const { location, genre, startDate, endDate, page, perPage } = req.query;
+    let { location, genre, startDate, endDate, page, perPage } = req.query;
 
     const skip = parseInt(page);
     const take = parseInt(perPage);
     const where = {};
     where.date = {};
 
+    if (!genre) {
+      where.genre = 'event';
+    } else {
+      genre = genre.toLowerCase().trim();
+    }
+
     let foundEvent = await prisma.$transaction([
-      prisma.event.count({ where }),
+      prisma.event.count({
+        where: {
+          date: {
+            gte: new Date(startDate.substring(4, 15)),
+            lte: new Date(endDate.substring(4, 15)),
+          },
+          location: {
+            contains: location,
+          },
+          genre: {
+            contains: genre,
+          },
+        },
+      }),
       prisma.event.findMany({
         where: {
           date: {

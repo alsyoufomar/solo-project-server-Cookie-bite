@@ -121,7 +121,7 @@ async function getUser(req, res) {
 const updateUser = async (req, res) => {
   try {
     const schema = Joi.object({
-      username: Joi.string().min(3).max(30).required(),
+      username: Joi.string().min(3).max(20).required(),
       email: Joi.string()
         .email({
           minDomainSegments: 2,
@@ -138,7 +138,7 @@ const updateUser = async (req, res) => {
         lastname: Joi.string().min(2).max(15).required(),
         phone: Joi.string().min(7).max(20),
         bio: Joi.string().min(3).max(150),
-        avatarUrl: Joi.string().min(5).max(1000),
+        avatarUrl: Joi.string().min(5).max(10000),
         userId: Joi.number(),
         createdAt: Joi.string(),
         updatedAt: Joi.string(),
