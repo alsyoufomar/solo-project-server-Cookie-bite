@@ -106,7 +106,7 @@ function featuredGenerate() {
   else return false;
 }
 
-schedule.scheduleJob('* * 13 * *', function () {
+schedule.scheduleJob('58 * * * * *', function () {
   scrapper().catch(async (err) => {
     console.log(err);
     await prisma.$disconnect();
