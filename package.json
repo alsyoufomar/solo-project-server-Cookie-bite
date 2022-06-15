@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --kill-others \"nodemon src/index.js\" \"node webScraper/webScraper.js\"",
+    "dev": "nodemon src/index.js",
     "start": "concurrently --kill-others \"node src/index.js\" \"node webScraper/webScraper.js\"",
     "build": "npx prisma migrate deploy"
   },

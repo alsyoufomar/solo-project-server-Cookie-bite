@@ -69,7 +69,19 @@ const createUser = async (req, res) => {
 
 async function loginUser(req, res) {
   try {
-    const { username, password } = req.body;
+    const schema = Joi.object({
+      username: Joi.string().min(3).max(30).required(),
+      password: Joi.string().min(3).max(30).required(),
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      res.status(400);
+      res.json({ error: error.details[0].message });
+      return;
+    }
+
+    const { username, password } = value;
     const user = await prisma.user.findUnique({ where: { username } });
     if (user) {
       const match = await bcrypt.compare(password, user.password);
