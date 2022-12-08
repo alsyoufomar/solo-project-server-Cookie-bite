@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "concurrently --kill-others \"node src/index.js\" \"node webScraper/webScraper.js\"",
+    "start-scrapper":"node webScraper/webScraper.js",
+    "start-server":"node src/index.js",
+    "parallel-start":"npm run start-server & npm run start-scrapper",
     "build": "npx prisma migrate deploy"
   },
   "prisma": {
